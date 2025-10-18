@@ -3,13 +3,14 @@ import argparse
 from datetime import datetime
 
 from roles import Narrator, WorldSim, Character, Editor
-from utils import write_story_to_file
+from utils import write_story_to_file, from_checkpoint
 
 
 def main(
-    human_input: str,
+    human_input: str | None,
     max_iterations: int,
     multichar: bool,
+    checkpoint: bool,
     llm: str,
     temperature: float,
     completion_tokens: int,
@@ -32,9 +33,10 @@ def main(
     editor = Editor(llm=llm, groq_kwargs=global_kwargs)
 
     print("[+] Initialising the narrator...")
-    prompt = narrator.edit_human_input(human_input)
+    init_prompt = human_input if human_input else from_checkpoint(llm, multichar)
+    prompt = narrator.edit_input(init_prompt)
     for i in range(max_iterations):
-        print(f"[+] Iteration {i+1}:")
+        print(f"[+] Iteration {i + 1}:")
         print("\t[+] WorldSim - Simulating...")
         sim_out = worldsim.simulate_world_event(prompt)
         print("\t[+] Narrator - Editing simulation output...")
@@ -52,6 +54,7 @@ def main(
     }
     story = editor.compile_story(memory_dict)
 
+    # don't add checkpointing to the path to make the weaving more seamless
     base_path = os.path.join("stories", llm)
     if multichar:
         base_path = os.path.join(base_path, "multichar")
@@ -76,6 +79,11 @@ if __name__ == "__main__":
         "--multichar",
         action="store_true",
         help="Enable multi-character mode",
+    )
+    args.add_argument(
+        "--checkpoint",
+        action="store_true",
+        help="Start from a checkpoint",
     )
 
     # llm-specific arguments
@@ -103,11 +111,12 @@ if __name__ == "__main__":
 
     args = args.parse_args()
 
-    human_input = input(">>> Insert initial prompt: ")
+    human_input = input(">>> Insert initial prompt: ") if not args.checkpoint else None
     main(
-        human_input,
+        human_input if human_input else None,
         args.max_iterations,
         args.multichar,
+        args.checkpoint,
         args.llm,
         args.temperature,
         args.completion_tokens,

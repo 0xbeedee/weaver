@@ -15,12 +15,12 @@ class Narrator(BaseRole):
     ):
         super().__init__(role="narrator", llm=llm)
 
-    def edit_human_input(self, human_input: str) -> str:
+    def edit_input(self, human_input: str) -> str:
         """
-        Processes and 'edits' human input to set the initial scene.
+        Processes and 'edits' the human/checkpoint input to set the initial scene.
         The generated output is saved to this model's memory.
         """
-        task_specific_prompt = f"As a narrator, refine and set the scene based on the human's starting idea: '{human_input}'"
+        task_specific_prompt = f"As a narrator, refine and set the scene based on the following starting idea: '{human_input}'"
         return self.generate(user_prompt=task_specific_prompt)
 
     def edit_simulation_output(self, sim_output: str, context_prompt: str) -> str:
