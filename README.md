@@ -10,13 +10,11 @@ The code uses `python 3.13`, and relies on [groq](https://groq.com)[^2] for LLM 
 
 1. (Optional) Set up a virtual environment;
 
-2. Install all the requirements (`pip install -r requirements.txt`);
+2. Install the project in editable mode (`pip install -e .`);
 
-3. Install the project in editable mode (`pip install -e .`);
+3. Put your API key in the `groq.key` file;
 
-4. Put your API key in the `groq.key` file;
-
-5. Run the `weave.py` script (`python weave.py`).
+4. Run the `weave.py` script (`python weave.py`).
 
 ## Structure
 
