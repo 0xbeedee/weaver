@@ -10,7 +10,7 @@ class WorldSim(BaseRole):
 
     def __init__(
         self,
-        llm: str = "moonshotai/kimi-k2-instruct-0905",
+        llm: str,
         local: bool = False,
         gen_kwargs: Dict[str, Any] = {},
     ):
