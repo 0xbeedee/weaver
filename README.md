@@ -6,7 +6,12 @@ The human enters the loop in the beginning, specifying the initial conditions, a
 
 ## Running the code
 
-The code uses `python 3.13`, and relies on [groq](https://groq.com)[^2] for LLM inference. To run it, do the following:
+The code uses `python 3.13`. 
+It can be run by either relying on [groq](https://groq.com), or by using [HuggingFace](https://huggingface.co).
+
+### Running with groq
+
+To use groq, do the following:
 
 1. (Optional) Set up a virtual environment;
 
@@ -15,6 +20,28 @@ The code uses `python 3.13`, and relies on [groq](https://groq.com)[^2] for LLM 
 3. Put your API key in the `groq.key` file;
 
 4. Run the `weave.py` script (`python weave.py`).
+
+### Running with HuggingFace
+
+You can use HuggingFace to either run inference locally/on classical GPUaaS providers like [Lambda](https://lambda.ai), or remotely, using [Modal](https://modal.com).
+
+In both cases, the first step remains the same:
+
+1. (Optional) Set up a virtual environment;
+
+#### Running locally/using a GPUaaS
+
+2. Install the project in editable mode (`pip install -e .[local]`);
+
+3. Run the `weave.py` script (`python weave.py`).
+
+#### Running with Modal
+
+2. Set up Modal, following the [instructions](https://modal.com/docs/guide#getting-started) on their website.
+
+3. Install the project in editable mode (`pip install -e .[modal]`);
+
+4. Run the `weave.py` script using modal (`modal run weave.py`).
 
 ## Structure
 
@@ -25,4 +52,3 @@ The code uses `python 3.13`, and relies on [groq](https://groq.com)[^2] for LLM 
 `logs/` contains the logs of the runs, it also represents the memory of the system.
 
 [^1]: quite the mouthful...
-[^2]: this is a rather stringent limitation, but it fits the PoC nature of the project.
