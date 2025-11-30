@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
@@ -19,7 +20,7 @@ class BaseRole:
 
         Args:
             role: The role of the model.
-            llm: The name of the Groq model to use for the text-generation pipeline.
+            llm: The name of the model to use for the text generation.
         """
         if local:  # huggingface
             self.pipe = pipeline("text-generation", model=llm)
@@ -93,7 +94,7 @@ class BaseRole:
 
         if self.local:
             chat_completion = self.pipe(messages, **self.gen_kwargs)
-            generated_text = chat_completion[0]["generated_text"][-1]["content"]
+            generated_text = self._clean_text_from_pipeline(chat_completion)
         else:
             chat_completion = self.client.chat.completions.create(
                 messages=messages, model=self.model, **self.gen_kwargs
@@ -134,3 +135,12 @@ class BaseRole:
         """
         self.memory = []
         self.logger.info(f"Memory cleared for role '{self.role}'.")
+
+    def _clean_text_from_pipeline(
+        self, chat_completion: list[dict[str, list[dict]]]
+    ) -> str:
+        """Clean the text from the transformers' pipeline."""
+        # see https://huggingface.co/docs/transformers/main_classes/pipelines#transformers.TextGenerationPipeline for output format
+        thinking_out = chat_completion[0]["generated_text"][-1]["content"]
+        # remove thinking outputs
+        return re.sub(r"<think>.*?</think>", "", thinking_out, flags=re.DOTALL).strip()
