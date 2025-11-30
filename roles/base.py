@@ -42,7 +42,9 @@ class BaseRole:
         self.memory: List[str] = []
 
         # logging
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # timestamp for uniqueness
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H"
+        )  # for uniqueness (hour granularity to avoid splitting the logs for the various roles into different directories)
         log_dir = Path("logs") / timestamp
         log_dir.mkdir(exist_ok=True, parents=True)
         self.log_file_path = log_dir / f"{self.role}.log"
