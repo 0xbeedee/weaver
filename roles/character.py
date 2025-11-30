@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from .base import BaseRole
 
 
@@ -10,11 +11,14 @@ class Character(BaseRole):
     def __init__(
         self,
         llm: str = "moonshotai/kimi-k2-instruct-0905",
-        groq_kwargs: Dict[str, Any] = {},
+        local: bool = False,
+        gen_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="character", llm=llm, groq_kwargs=groq_kwargs)
+        super().__init__(role="character", llm=llm, local=local, gen_kwargs=gen_kwargs)
 
-    def decide_action(self, current_situation_prompt: str, multichar: bool = False) -> str:
+    def decide_action(
+        self, current_situation_prompt: str, multichar: bool = False
+    ) -> str:
         """
         Decides an action for the character based on the current situation.
         The generated output is saved to this model's memory.
@@ -22,5 +26,7 @@ class Character(BaseRole):
         if multichar:
             task_specific_prompt = f"Decide the next action for all the characters involved based on: '{current_situation_prompt}'"
         else:
-            task_specific_prompt = f"Decide your next action based on: '{current_situation_prompt}'"
+            task_specific_prompt = (
+                f"Decide your next action based on: '{current_situation_prompt}'"
+            )
         return self.generate(user_prompt=task_specific_prompt)

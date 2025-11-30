@@ -4,19 +4,28 @@ import os
 from roles import Character, Editor, Narrator, WorldSim
 
 
-def instantiate_roles(llm: str, temperature: float, completion_tokens: int):
-    global_kwargs = {
+def instantiate_roles(
+    llm: str, local: bool, temperature: float, completion_tokens: int
+):
+    # common kwargs
+    gen_kwargs = {
         "temperature": temperature,
-        "max_completion_tokens": completion_tokens,
         # the arguments below are best left as default values
         "top_p": 1,
         "stream": False,
         "stop": None,
     }
-    narrator = Narrator(llm=llm, groq_kwargs=global_kwargs)
-    worldsim = WorldSim(llm=llm, groq_kwargs=global_kwargs)
-    character = Character(llm=llm, groq_kwargs=global_kwargs)
-    editor = Editor(llm=llm, groq_kwargs=global_kwargs)
+    if local:  # huggingface
+        gen_kwargs["max_new_tokens"] = completion_tokens
+        gen_kwargs["do_sample"] = True if temperature > 0 else False
+        del gen_kwargs["stream"]
+    else:  # groq
+        gen_kwargs["max_completion_tokens"] = completion_tokens
+
+    narrator = Narrator(llm=llm, local=local, gen_kwargs=gen_kwargs)
+    worldsim = WorldSim(llm=llm, local=local, gen_kwargs=gen_kwargs)
+    character = Character(llm=llm, local=local, gen_kwargs=gen_kwargs)
+    editor = Editor(llm=llm, local=local, gen_kwargs=gen_kwargs)
 
     return narrator, worldsim, character, editor
 

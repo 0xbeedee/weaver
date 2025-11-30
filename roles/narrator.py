@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from .base import BaseRole
 
 
@@ -11,9 +12,10 @@ class Narrator(BaseRole):
     def __init__(
         self,
         llm="moonshotai/kimi-k2-instruct-0905",
-        groq_kwargs: Dict[str, Any] = {},
+        local: bool = False,
+        gen_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="narrator", llm=llm)
+        super().__init__(role="narrator", llm=llm, local=local, gen_kwargs=gen_kwargs)
 
     def edit_input(self, human_input: str) -> str:
         """

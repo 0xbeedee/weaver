@@ -8,6 +8,7 @@ from utils import from_checkpoint, instantiate_roles, write_story_to_file
 def main(
     llm: str,
     human_input: str | None,
+    local: bool,
     max_iterations: int,
     multichar: bool,
     checkpoint: bool,
@@ -18,7 +19,7 @@ def main(
 
     print("\n[+] Instantiating the roles...")
     narrator, worldsim, character, editor = instantiate_roles(
-        llm, temperature, completion_tokens
+        llm, local, temperature, completion_tokens
     )
 
     print("[+] Initialising the narrator...")
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     main(
         llm,
         human_input if human_input else None,
+        args.local,
         args.max_iterations,
         args.multichar,
         args.checkpoint,

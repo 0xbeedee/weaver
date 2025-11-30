@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from .base import BaseRole
 
 
@@ -10,9 +11,10 @@ class WorldSim(BaseRole):
     def __init__(
         self,
         llm: str = "moonshotai/kimi-k2-instruct-0905",
-        groq_kwargs: Dict[str, Any] = {},
+        local: bool = False,
+        gen_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="worldsim", llm=llm, groq_kwargs=groq_kwargs)
+        super().__init__(role="worldsim", llm=llm, local=local, gen_kwargs=gen_kwargs)
 
     def simulate_world_event(self, current_situation_prompt: str) -> str:
         """

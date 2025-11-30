@@ -1,16 +1,19 @@
-from typing import List, Any, Dict
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List
 
 from groq import Groq
+from transformers import pipeline
 
 
 class BaseRole:
     """A base class representing a role model with a specific role and memory.
     Automatically logs all interactions to a timestamped file in a 'logs' directory."""
 
-    def __init__(self, role: str, llm: str, groq_kwargs: Dict[str, Any] = {}) -> None:
+    def __init__(
+        self, role: str, llm: str, local: bool, gen_kwargs: Dict[str, Any] = {}
+    ) -> None:
         """
         Initializes the role and creates a timestamped log directory.
 
@@ -18,10 +21,15 @@ class BaseRole:
             role: The role of the model.
             llm: The name of the Groq model to use for the text-generation pipeline.
         """
-        with open("groq.key", "r") as f:
-            api_key = f.read().strip()
-        self.client = Groq(api_key=api_key)
-        self.groq_kwargs = groq_kwargs
+        if local:  # huggingface
+            self.pipe = pipeline("text-generation", model=llm)
+        else:  # groq
+            with open("groq.key", "r") as f:
+                api_key = f.read().strip()
+            self.client = Groq(api_key=api_key)
+
+        self.local = local
+        self.gen_kwargs = gen_kwargs
         self.model = llm
 
         self.role: str = role
@@ -83,11 +91,15 @@ class BaseRole:
             messages.append({"role": "system", "content": self.system_prompt})
         messages.append({"role": "user", "content": user_prompt})
 
-        chat_completion = self.client.chat.completions.create(
-            messages=messages, model=self.model, **self.groq_kwargs
-        )
+        if self.local:
+            chat_completion = self.pipe(messages, **self.gen_kwargs)
+            generated_text = chat_completion[0]["generated_text"][-1]["content"]
+        else:
+            chat_completion = self.client.chat.completions.create(
+                messages=messages, model=self.model, **self.gen_kwargs
+            )
+            generated_text = chat_completion.choices[0].message.content
 
-        generated_text = chat_completion.choices[0].message.content
         if generated_text is None:
             raise ValueError("Generated text is None")
 
