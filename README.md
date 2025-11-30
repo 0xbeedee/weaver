@@ -31,7 +31,7 @@ In both cases, the first step remains the same:
 
 #### Running locally/using a GPUaaS
 
-2. Install the project in editable mode (`pip install -e .[local]`);
+2. Install the project in editable mode (`pip install -e .`);
 
 3. Run the `weave.py` script (`python weave.py`).
 
