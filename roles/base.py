@@ -9,8 +9,10 @@ from transformers import pipeline
 
 
 class BaseRole:
-    """A base class representing a role model with a specific role and memory.
-    Automatically logs all interactions to a timestamped file in a 'logs' directory."""
+    """A base class for all the roles.
+
+    It centralises LLM generation and handles the roles' memory. It also automatically logs all interactions to a timestamped file in a 'logs' directory.
+    """
 
     def __init__(
         self, role: str, llm: str, local: bool, gen_kwargs: Dict[str, Any] = {}
