@@ -1,36 +1,25 @@
-import os
 import argparse
+import os
 from datetime import datetime
 
-from roles import Narrator, WorldSim, Character, Editor
-from utils import write_story_to_file, from_checkpoint
+from utils import from_checkpoint, instantiate_roles, write_story_to_file
 
 
 def main(
+    llm: str,
     human_input: str | None,
     max_iterations: int,
     multichar: bool,
     checkpoint: bool,
-    llm: str,
     temperature: float,
     completion_tokens: int,
 ) -> None:
     # TODO should make the whole thing more configurable, hydra is probably the way...
 
-    print("[+] Instantiating the roles...")
-    # use one set of kwargs for simplicity
-    global_kwargs = {
-        "temperature": temperature,
-        "max_completion_tokens": completion_tokens,
-        # the arguments below are best left as default values
-        "top_p": 1,
-        "stream": False,
-        "stop": None,
-    }
-    narrator = Narrator(llm=llm, groq_kwargs=global_kwargs)
-    worldsim = WorldSim(llm=llm, groq_kwargs=global_kwargs)
-    character = Character(llm=llm, groq_kwargs=global_kwargs)
-    editor = Editor(llm=llm, groq_kwargs=global_kwargs)
+    print("\n[+] Instantiating the roles...")
+    narrator, worldsim, character, editor = instantiate_roles(
+        llm, temperature, completion_tokens
+    )
 
     print("[+] Initialising the narrator...")
     init_prompt = human_input if human_input else from_checkpoint(llm, multichar)
@@ -85,15 +74,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Start from a checkpoint",
     )
+    args.add_argument(
+        "--local",
+        action="store_true",
+        help="Run locally",
+    )
 
     # llm-specific arguments
-    args.add_argument(
-        "-l",
-        "--llm",
-        default="moonshotai/kimi-k2-instruct-0905",
-        type=str,
-        help="LLM model to use for the story (MUST BE IN THE LIST OF AVAILABLE MODELS ON Groq!)",
-    )
     args.add_argument(
         "-t",
         "--temperature",
@@ -111,13 +98,20 @@ if __name__ == "__main__":
 
     args = args.parse_args()
 
+    # having the user input the model (instead of using a CLI flag) makes for a cleaner interface
+    if args.local:
+        options = "Any HuggingFace model will do. Available options can be found at https://huggingface.co/models?pipeline_tag=text-generation."
+    else:
+        options = "Any model available on Groq will do. Available options can be found at https://console.groq.com/docs/models."
+    llm = input(f">>> LLM to use ({options}): ")
+
     human_input = input(">>> Insert initial prompt: ") if not args.checkpoint else None
     main(
+        llm,
         human_input if human_input else None,
         args.max_iterations,
         args.multichar,
         args.checkpoint,
-        args.llm,
         args.temperature,
         args.completion_tokens,
     )
