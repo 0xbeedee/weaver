@@ -21,6 +21,59 @@ except ImportError:
     app = None
 
 
+def setup_args_parser() -> argparse.ArgumentParser:
+    """Create and configure the argument parser."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-m",
+        "--max_iterations",
+        type=int,
+        required=True,
+        help="Maximum number of iterations to use for the story",
+    )
+    parser.add_argument(
+        "--multichar",
+        action="store_true",
+        help="Enable multi-character mode",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        action="store_true",
+        help="Start from a checkpoint",
+    )
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Run locally",
+    )
+    parser.add_argument(
+        "-t",
+        "--temperature",
+        default=0.7,
+        type=float,
+        help="Temperature for the LLM model",
+    )
+    parser.add_argument(
+        "-c",
+        "--completion_tokens",
+        default=2048,
+        type=int,
+        help="Maximum number of tokens per request",
+    )
+    return parser
+
+
+def get_user_inputs(args) -> tuple[str, str | None]:
+    """Get LLM and initial prompt from user."""
+    if args.local:
+        options = "Any HuggingFace model will do. Available options can be found at https://huggingface.co/models?pipeline_tag=text-generation."
+    else:
+        options = "Any model available on Groq will do. Available options can be found at https://console.groq.com/docs/models."
+    llm = input(f">>> LLM to use ({options}): ")
+    human_input = input(">>> Insert initial prompt: ") if not args.checkpoint else None
+    return llm, human_input
+
+
 def main(
     llm: str,
     human_input: str | None,
@@ -105,59 +158,14 @@ if app is not None:
     @app.local_entrypoint()
     def modal_cli():
         """Modal entry point for CLI argument parsing and user input."""
-        args = argparse.ArgumentParser()
-        args.add_argument(
-            "-m",
-            "--max_iterations",
-            type=int,
-            required=True,
-            help="Maximum number of iterations to use for the story",
-        )
-        args.add_argument(
-            "--multichar",
-            action="store_true",
-            help="Enable multi-character mode",
-        )
-        args.add_argument(
-            "--checkpoint",
-            action="store_true",
-            help="Start from a checkpoint",
-        )
-        args.add_argument(
-            "--local",
-            action="store_true",
-            help="Run locally",
-        )
-        args.add_argument(
-            "-t",
-            "--temperature",
-            default=0.7,
-            type=float,
-            help="Temperature for the LLM model",
-        )
-        args.add_argument(
-            "-c",
-            "--completion_tokens",
-            default=2048,
-            type=int,
-            help="Maximum number of tokens per request",
-        )
-
-        args = args.parse_args()
-
-        # Get user input locally
-        if args.local:
-            options = "Any HuggingFace model will do. Available options can be found at https://huggingface.co/models?pipeline_tag=text-generation."
-        else:
-            options = "Any model available on Groq will do. Available options can be found at https://console.groq.com/docs/models."
-        llm = input(f">>> LLM to use ({options}): ")
-
-        human_input = input(">>> Insert initial prompt: ") if not args.checkpoint else None
+        parser = setup_args_parser()
+        args = parser.parse_args()
+        llm, human_input = get_user_inputs(args)
 
         # Execute main logic on Modal and get the story back
         story_path, story_content = modal_main.remote(
             llm,
-            human_input if human_input else None,
+            human_input,
             args.local,
             args.max_iterations,
             args.multichar,
@@ -175,59 +183,13 @@ if app is not None:
 
 
 if __name__ == "__main__":
-    args = argparse.ArgumentParser()
-    args.add_argument(
-        "-m",
-        "--max_iterations",
-        type=int,
-        required=True,
-        help="Maximum number of iterations to use for the story",
-    )
-    args.add_argument(
-        "--multichar",
-        action="store_true",
-        help="Enable multi-character mode",
-    )
-    args.add_argument(
-        "--checkpoint",
-        action="store_true",
-        help="Start from a checkpoint",
-    )
-    args.add_argument(
-        "--local",
-        action="store_true",
-        help="Run locally",
-    )
+    parser = setup_args_parser()
+    args = parser.parse_args()
+    llm, human_input = get_user_inputs(args)
 
-    # llm-specific arguments
-    args.add_argument(
-        "-t",
-        "--temperature",
-        default=0.7,
-        type=float,
-        help="Temperature for the LLM model",
-    )
-    args.add_argument(
-        "-c",
-        "--completion_tokens",
-        default=2048,
-        type=int,
-        help="Maximum number of tokens per request",
-    )
-
-    args = args.parse_args()
-
-    # having the user input the model (instead of using a CLI flag) makes for a cleaner interface
-    if args.local:
-        options = "Any HuggingFace model will do. Available options can be found at https://huggingface.co/models?pipeline_tag=text-generation."
-    else:
-        options = "Any model available on Groq will do. Available options can be found at https://console.groq.com/docs/models."
-    llm = input(f">>> LLM to use ({options}): ")
-
-    human_input = input(">>> Insert initial prompt: ") if not args.checkpoint else None
     main(
         llm,
-        human_input if human_input else None,
+        human_input,
         args.local,
         args.max_iterations,
         args.multichar,
