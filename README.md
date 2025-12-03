@@ -39,7 +39,7 @@ In both cases, the first step remains the same:
 
 2. Set up Modal, following the [instructions](https://modal.com/docs/guide#getting-started) on their website.
 
-3. Install the project in editable mode (`pip install -e .[modal]`);
+3. Install the project in editable mode (`pip install -e ".[modal]"`);
 
 4. Run the `weave.py` script using modal (`modal run weave.py`).
 
