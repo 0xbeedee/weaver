@@ -17,6 +17,9 @@ setup(
     url="https://github.com/de-lachende-cavalier/weaver",
     packages=find_packages(exclude=["*.egg-info", "tests*", "docs*", "build*"]),
     install_requires=requirements,
+    extras_require={
+        "modal": ["modal"],
+    },
     python_requires=">=3.13",
     classifiers=[
         "Development Status :: 3 - Alpha",
