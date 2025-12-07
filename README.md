@@ -43,8 +43,6 @@ In both cases, the first step remains the same:
 
 4. Run the `weave.py` script using modal (`modal run weave.py`).
 
-Modal execution accepts the same CLI arguments as standard Python execution (e.g., `modal run weave.py -m 5 --multichar`).
-
 ## Structure
 
 `roles/` contains the classes corresponding to the various roles (character, editor, narrator and worldsim);
