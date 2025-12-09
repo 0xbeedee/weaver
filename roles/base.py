@@ -9,8 +9,10 @@ from transformers import pipeline
 
 
 class BaseRole:
-    """A base class representing a role model with a specific role and memory.
-    Automatically logs all interactions to a timestamped file in a 'logs' directory."""
+    """A base class for all the roles.
+
+    It centralises LLM generation and handles the roles' memory. It also automatically logs all interactions to a timestamped file in a 'logs' directory.
+    """
 
     def __init__(
         self, role: str, llm: str, local: bool, gen_kwargs: Dict[str, Any] = {}
@@ -40,7 +42,9 @@ class BaseRole:
         self.memory: List[str] = []
 
         # logging
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # timestamp for uniqueness
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H"
+        )  # for uniqueness (hour granularity to avoid splitting the logs for the various roles into different directories)
         log_dir = Path("logs") / timestamp
         log_dir.mkdir(exist_ok=True, parents=True)
         self.log_file_path = log_dir / f"{self.role}.log"
@@ -129,17 +133,14 @@ class BaseRole:
         return self.memory.copy()  # return a copy to prevent external modification
 
     def clear_memory(self) -> None:
-        """
-        Clears the role model's memory.
-        The system prompt, if set, will be re-added and re-logged.
-        """
+        """Clears the role model's memory."""
         self.memory = []
         self.logger.info(f"Memory cleared for role '{self.role}'.")
 
     def _clean_text_from_pipeline(
         self, chat_completion: list[dict[str, list[dict]]]
     ) -> str:
-        """Clean the text from the transformers' pipeline."""
+        """Cleans the text from the transformers' pipeline."""
         # see https://huggingface.co/docs/transformers/main_classes/pipelines#transformers.TextGenerationPipeline for output format
         thinking_out = chat_completion[0]["generated_text"][-1]["content"]
         # remove thinking outputs

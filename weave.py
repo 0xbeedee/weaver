@@ -11,12 +11,9 @@ def main(
     local: bool,
     max_iterations: int,
     multichar: bool,
-    checkpoint: bool,
     temperature: float,
     completion_tokens: int,
 ) -> None:
-    # TODO should make the whole thing more configurable, hydra is probably the way...
-
     print("\n[+] Instantiating the roles...")
     narrator, worldsim, character, editor = instantiate_roles(
         llm, local, temperature, completion_tokens
@@ -113,7 +110,6 @@ if __name__ == "__main__":
         args.local,
         args.max_iterations,
         args.multichar,
-        args.checkpoint,
         args.temperature,
         args.completion_tokens,
     )
